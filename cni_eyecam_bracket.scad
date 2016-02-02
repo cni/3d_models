@@ -2,13 +2,13 @@
   Bracket to mount CNI eye tracker camera to an IV pole.
 */
 
-toplength = 235;
+toplength = 240;
 sidelength = 100;
 thickness = 35;
-pole_diameter = 16.5;
-mount_screw_diameter = 8.5; // 1/4" screw (clear-through)
-mount_nut_size = 15;
-mount_nut_height = 10;
+pole_diameter = 17.5;
+mount_screw_diameter = 8.75; // 1/4" screw (clear-through)
+mount_nut_size = 14.0;
+mount_nut_height = 7.0;
 
 // From http://svn.clifford.at/openscad/trunk/libraries/shapes.scad
 // size is the XY plane size, height in Z
@@ -66,7 +66,7 @@ difference() {
     d = -toplength+S+P+mount_nut_size + 20 * i;
     rotate(-90, [1, 0, 0]){
       translate([d, 0, S-P])
-        %cylinder(r=mount_screw_diameter/2, h=P*3);
+        cylinder(r=mount_screw_diameter/2, h=P*3);
       // Hexnut cut-out for pole mount screw
       translate([d, 0, S+mount_nut_height/2])
         // Rotate the nuts for minimal horizontal overhang
