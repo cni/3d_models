@@ -6,15 +6,16 @@
 toplength = 240;
 sidelength = 100;
 thickness = 35;
-pole_radius = 17.5/2;
+pole_radius = 17.0/2;
 mount_screw_diameter = 8.75; // 1/4" screw (clear-through)
 mount_nut_size = 14.0;
 mount_nut_height = 8.0;
 
 // bottom bracket (to secure pole to bed)
-bed_height = 98;
+bed_height = 93;
 bed_to_pole = 66;
-bed_inset = 10;
+bed_inset = 15;
+bed_fill_side = 21; // Triangle on the upper part of the bed bracket. (hypotenuse ~= 30mm)
 
 width = 15;            // thickness of outer edges
 
@@ -94,7 +95,6 @@ module top_bracket(P){
 }
 
 module bottom_bracket(P){
-  //bed_height = 98;bed_to_pole = 66;bed_inset = 10;
   difference() {
     union(){
       cube([bed_height+2*P, P, thickness], center=true);
@@ -104,6 +104,9 @@ module bottom_bracket(P){
       rotate(-90, [0,0,1])
         translate([bed_inset/2, -bed_height/2-P/2, 0])
           cube([bed_inset+P, P, thickness], center=true);
+      rotate(180, [0,0,1])
+        translate([-bed_height/2,P/2,0])
+          triangle(bed_fill_side, thickness);
     }
 
     // hole for pole
@@ -125,5 +128,5 @@ module bottom_bracket(P){
 top_bracket(width);
 translate([-100,-70,0])
   rotate(180, [0, 0, 1])
-    bottom_bracket(width*1.25);
+    bottom_bracket(width*1.2);
 
