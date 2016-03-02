@@ -9,13 +9,18 @@ thickness = 35;
 pole_radius = 17.0/2;
 mount_screw_diameter = 8.75; // 1/4" screw (clear-through)
 mount_nut_size = 14.0;
-mount_nut_height = 8.0;
+mount_nut_height = 8.0; //8.0;
 
 // bottom bracket (to secure pole to bed)
 bed_height = 93;
 bed_to_pole = 66;
 bed_inset = 15;
 bed_fill_side = 21; // Triangle on the upper part of the bed bracket. (hypotenuse ~= 30mm)
+bed_recess_height = 4;
+bed_recess_radius = 36/2;
+
+pole_support_height = 30;
+
 
 width = 15;            // thickness of outer edges
 
@@ -32,13 +37,13 @@ module triangle(size=sidelength, height=1) {
   polygon(points = [[0, 0], [size, 0], [0, size]], paths = [[0, 1, 2]]);
 }
 
-module hexnut(pad){
+module hexnut(pad, rot=30){
   translate([0,0,-pad/2-1])
     cylinder(r=mount_screw_diameter/2, h=pad+2);
   // Hexnut cut-out for pole mount screw
-  translate([0,0,-(mount_nut_height/2+.1+3)])
-    rotate(30, [0,0,1])
-      hexagon(mount_nut_size, mount_nut_height+3); // 1/4" hex nut size
+  translate([0,0,-(mount_nut_height)])
+    rotate(rot, [0,0,1])
+      hexagon(mount_nut_size, mount_nut_height*2); // 1/4" hex nut size
 }
 
 module top_bracket(P){
@@ -94,25 +99,36 @@ module top_bracket(P){
   }
 }
 
-module bottom_bracket(P){
+module bottom_bracket(P, thickness){
   difference() {
     union(){
+      // part that runs along the side of the bed
       cube([bed_height+2*P, P, thickness], center=true);
-      rotate(-90, [0,0,1])
-        translate([bed_to_pole/2+P/2+pole_radius/2, bed_height/2+P/2, 0])
-          cube([bed_to_pole+2*P+pole_radius, P, thickness], center=true);
-      rotate(-90, [0,0,1])
-        translate([bed_inset/2, -bed_height/2-P/2, 0])
-          cube([bed_inset+P, P, thickness], center=true);
+      // arm that runs along the top of the bed
+      // Includes a triange brace for added strength and 
+      // an extension to hold the pole
+      translate([(bed_height/2+P/2), -(bed_to_pole/2+P/2+pole_radius/2), 0])
+        cube([P, bed_to_pole+2*P+pole_radius, thickness], center=true);
       rotate(180, [0,0,1])
         translate([-bed_height/2,P/2,0])
           triangle(bed_fill_side, thickness);
+      translate([bed_height/2+P*2, -(bed_to_pole+P/2), 0])
+          cube([pole_support_height, pole_radius*2+P*2, thickness], center=true);
+      // Flange to catch the bottom of the bed
+      translate([-bed_height/2-P/2, -bed_inset/2, 0])
+         cube([P, bed_inset+P, thickness], center=true);
+
     }
 
     // hole for pole
     rotate(-90, [0, 1, 0])
-      translate([0, -bed_to_pole-P/2, -bed_height/2-P-1])
-        cylinder(r=pole_radius, h=P+2);
+      translate([0, -bed_to_pole-P/2, -bed_height/2-P-pole_support_height-1])
+        cylinder(r=pole_radius, h=P+2+pole_support_height);
+    
+    // recess for pole mount flange on bed
+    rotate(-90, [0, 1, 0])
+      translate([0, -bed_to_pole-P/2, -bed_height/2-bed_recess_height+.1])
+        cylinder(r=bed_recess_radius, h=bed_recess_height);
       
     // hole for bed tension screw
     rotate(-90, [1, 0, 0])
@@ -120,13 +136,16 @@ module bottom_bracket(P){
 
     // hole for pole tension screw
     rotate(90, [1, 0, 0])
-      translate([bed_height/2+P/2, 0, bed_to_pole+P+pole_radius])
+      translate([bed_height/2+P+pole_support_height/2, 0, bed_to_pole+P+pole_radius])
         hexnut(P);
+    rotate(0, [1, 0, 0])
+      translate([(bed_height/2+P+pole_support_height/2), -(bed_to_pole+P/2), thickness/2-pole_radius])
+        hexnut(thickness/2, rot=0);
   }
 }
 
-top_bracket(width);
+//top_bracket(width);
 translate([-100,-70,0])
   rotate(180, [0, 0, 1])
-    bottom_bracket(width*1.2);
+    bottom_bracket(width*1.0, thickness*1.5);
 
